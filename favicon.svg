@@ -1,0 +1,18 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Path untuk Perisai sebagai Latar Belakang -->
+    <path d="M32,2 L60,12 L60,38 C60,52 48,60 32,62 C16,60 4,52 4,38 L4,12 Z" fill="#111111"/>
+
+    <!-- Grup untuk semua elemen logo dengan warna emas -->
+    <g fill="#DDC27C">
+        
+        <!-- Path untuk Bintang (Star) di kanan atas -->
+        <path d="M48.5,17 L51,14.5 L53.5,17 L51,19.5 Z" />
+
+        <!-- Path untuk Bentuk Utama (Kurva & Panah) -->
+        <!-- Path ini dimulai dari kiri bawah, melengkung ke atas membentuk panah, lalu kembali untuk membuat bentuk yang solid -->
+        <path d="M22,50 C18,35, 26,24, 32,21 L32,14 L38,21 C45,25, 48,38, 44,46 C40,43, 30,43, 22,50 Z" />
+
+        <!-- Path untuk Kurva Kecil di Kanan Bawah -->
+        <path d="M45,50 C40,47, 34,47, 29,50 C34,53, 40,53, 45,50 Z"/>
+    </g>
+</svg>
