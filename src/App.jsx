@@ -29,8 +29,8 @@ const foodData = {
 
 // --- Options for UI Controls ---
 const foodOptions = Object.keys(foodData);
-const backgroundOptions = ['Rustic wooden table', 'Batik tablecloth', 'Green banana leaf base', 'Clean white studio table', 'Custom (free text)'];
-const lightingOptions = ['Natural soft daylight from the left', 'Golden hour light with long shadows', 'Bright overhead studio lighting', 'Dramatic single-source side light', 'Custom (free text)'];
+const backgroundOptions = ['Rustic wooden table', 'Batik tablecloth', 'Green banana leaf base', 'Clean white studio table'];
+const lightingOptions = ['Natural soft daylight from the left', 'Golden hour light with long shadows', 'Bright overhead studio lighting', 'Dramatic single-source side light'];
 const aspectRatioOptions = ['1:1 (Square)', '4:3 (Landscape)', '9:16 (Portrait)', '16:9 (Widescreen)'];
 const compositionOptions = [
     'Top-down flat lay', 
@@ -67,39 +67,176 @@ const UserIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w
 const GeneratorIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>);
 const SettingsIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>);
 
+const GeneratePage = ({
+    themeClasses,
+    numberOfFoods,
+    setNumberOfFoods,
+    selectedFoods,
+    handleFoodSelectionChange,
+    composition,
+    setComposition,
+    background,
+    setBackground,
+    lighting,
+    setLighting,
+    aspectRatio,
+    setAspectRatio,
+    handleGenerateClick,
+    displayPrompt,
+    handleCopy,
+    isCopied,
+    promptError
+}) => (
+    <div className="w-full">
+        <h1 className={`text-3xl sm:text-4xl font-bold ${themeClasses.titleText} mb-2`}>AI Food Photo Prompt Generator</h1>
+        <p className={`text-lg mb-8 ${themeClasses.subtitleText}`}>Buat prompt deskriptif untuk fotografi makanan khas indonesia.</p>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <div className={`p-6 rounded-2xl shadow-lg border flex flex-col ${themeClasses.cardBg}`}>
+                <div className="flex-grow">
+                    <h2 className={`text-xl font-semibold mb-6 border-b pb-3 ${themeClasses.cardBorder}`}>Atur Komposisi</h2>
+                    <div className="space-y-5">
+                        <div>
+                          <label htmlFor="number-of-foods-select" className={`block text-sm font-medium ${themeClasses.labelText} mb-2`}>Jumlah Makanan</label>
+                          <select id="number-of-foods-select" value={numberOfFoods} onChange={(e) => setNumberOfFoods(e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>
+                            <option value="">Pilih jumlah makanan</option>
+                            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                        </div>
+                        {Number(numberOfFoods) > 0 && Array.from({ length: Number(numberOfFoods) }).map((_, index) => {
+                          const availableOptions = foodOptions.filter(food => !selectedFoods.includes(food) || selectedFoods[index] === food);
+                          return (
+                            <div key={index}>
+                              <label htmlFor={`food-select-${index}`} className={`block text-sm font-medium ${themeClasses.labelText} mb-2`}>{`Pilihan Makanan ${index + 1}`}</label>
+                              <select id={`food-select-${index}`} value={selectedFoods[index] || ''} onChange={(e) => handleFoodSelectionChange(index, e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>
+                                <option value="">-- Pilih Makanan --</option>
+                                {availableOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            </div>
+                          );
+                        })}
+                        <div>
+                          <label htmlFor="composition-select" className={`block text-sm font-medium ${themeClasses.labelText} mb-2`}>Gaya Pengambilan Foto</label>
+                          <select id="composition-select" value={composition} onChange={(e) => setComposition(e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>{compositionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>
+                        </div>
+                        <div>
+                          <label htmlFor="background-select" className={`block text-sm font-medium ${themeClasses.labelText} mb-2`}>Background</label>
+                          <select id="background-select" value={background} onChange={e => setBackground(e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>{backgroundOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>
+                        </div>
+                        <div>
+                          <label htmlFor="lighting-select" className={`block text-sm font-medium ${themeClasses.labelText} mb-2`}>Pencahayaan</label>
+                          <select id="lighting-select" value={lighting} onChange={e => setLighting(e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>{lightingOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>
+                        </div>
+                        <div>
+                          <label htmlFor="aspect-ratio-select" className={`block text-sm font-medium ${themeClasses.labelText} mb-2`}>Aspect Ratio</label>
+                          <select id="aspect-ratio-select" value={aspectRatio} onChange={e => setAspectRatio(e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>{aspectRatioOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>
+                        </div>
+                    </div>
+                </div>
+                <div className={`mt-8 pt-6 border-t ${themeClasses.cardBorder}`}>
+                    <button onClick={handleGenerateClick} className={`w-full py-4 px-4 rounded-lg font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3 shadow-lg ${themeClasses.buttonPrimary}`}>
+                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      Generate Prompt
+                    </button>
+                    {promptError && <p className="text-red-500 text-sm text-center mt-2">{promptError}</p>}
+                </div>
+            </div>
+            <div className={`p-6 rounded-2xl shadow-lg border flex flex-col ${themeClasses.cardBg}`}>
+                <h2 className="text-xl font-semibold mb-4">Hasil Prompt</h2>
+                <textarea
+                    readOnly
+                    value={displayPrompt}
+                    placeholder="Klik 'Generate Prompt' untuk melihat hasilnya di sini..."
+                    className={`w-full h-full flex-grow p-4 rounded-lg resize-none text-base leading-relaxed ${themeClasses.inputBg} ${themeClasses.inputFocus}`}
+                    rows="20"
+                />
+                {displayPrompt && (
+                    <button onClick={handleCopy} className={`w-full mt-4 py-3 px-4 rounded-lg font-bold text-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg ${themeClasses.buttonPrimary}`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            {isCopied ? <path d="M20 6 9 17l-5-5"/> : <><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></>}
+                        </svg>
+                        {isCopied ? 'Tersalin!' : 'Salin Prompt'}
+                    </button>
+                )}
+            </div>
+        </div>
+    </div>
+);
+  
+const SettingPage = ({ systemPrompt, setSystemPrompt, themeClasses }) => {
+    const [tempPrompt, setTempPrompt] = useState(systemPrompt);
+    const [saveStatus, setSaveStatus] = useState('');
+
+    const handleSave = () => {
+        setSystemPrompt(tempPrompt);
+        setSaveStatus('Tersimpan!');
+        setTimeout(() => setSaveStatus(''), 2000);
+    };
+
+    const handleReset = () => {
+        setTempPrompt(DEFAULT_SYSTEM_PROMPT);
+    }
+
+    return (
+      <div className="w-full">
+        <h1 className={`text-3xl sm:text-4xl font-bold ${themeClasses.titleText} mb-8`}>Pengaturan</h1>
+        <div className={`max-w-3xl p-8 rounded-2xl shadow-lg border ${themeClasses.cardBg}`}>
+            <div className="space-y-8">
+                <div>
+                    <label htmlFor="system-prompt-input" className={`block text-lg font-medium ${themeClasses.labelText} mb-2`}>System Prompt</label>
+                     <textarea
+                        id="system-prompt-input"
+                        value={tempPrompt}
+                        onChange={(e) => setTempPrompt(e.target.value)}
+                        rows="8"
+                        className={`w-full p-3 rounded-lg text-sm leading-relaxed ${themeClasses.inputBg} ${themeClasses.inputFocus}`}
+                    />
+                    <div className="mt-4 flex justify-end items-center gap-4">
+                        <button onClick={handleReset} className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${themeClasses.buttonSecondary}`}>
+                            Reset ke Default
+                        </button>
+                       {saveStatus && <span className="text-rose-500 text-sm italic">{saveStatus}</span>}
+                       <button onClick={handleSave} className={`px-6 py-2 text-sm font-bold rounded-lg transition-colors shadow-lg ${themeClasses.buttonPrimary}`}>
+                            Save Changes
+                       </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    );
+};
+
+const NavButton = ({ page, label, icon, themeClasses, currentPage, setCurrentPage, setIsNavVisible }) => (
+    <button
+      onClick={() => {
+          setCurrentPage(page);
+          setIsNavVisible(false);
+      }}
+      className={`flex items-center w-full text-left p-3 rounded-lg font-semibold transition-colors ${currentPage === page ? themeClasses.dropdownActive : themeClasses.dropdownItem}`}
+    >
+      {icon}
+      <span className="ml-3">{label}</span>
+    </button>
+);
+
+
 // --- Main App Component ---
 export default function App() {
-  // --- State Management ---
-  const [theme, setTheme] = useState('dark'); // 'dark' or 'light'
+  const [theme, setTheme] = useState('dark');
   const [isNavVisible, setIsNavVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState('generate');
-  const [numberOfFoods, setNumberOfFoods] = useState(3);
-  const [selectedFoods, setSelectedFoods] = useState(['Rawon', 'Sate Ayam', 'Pempek']);
+  const [numberOfFoods, setNumberOfFoods] = useState('');
+  const [selectedFoods, setSelectedFoods] = useState([]);
   const [background, setBackground] = useState(backgroundOptions[0]);
-  const [customBackground, setCustomBackground] = useState('');
   const [lighting, setLighting] = useState(lightingOptions[0]);
-  const [customLighting, setCustomLighting] = useState('');
   const [aspectRatio, setAspectRatio] = useState(aspectRatioOptions[0]);
   const [composition, setComposition] = useState(compositionOptions[0]);
-  
   const [systemPrompt, setSystemPrompt] = useState(DEFAULT_SYSTEM_PROMPT);
   const [displayPrompt, setDisplayPrompt] = useState('');
   const [isCopied, setIsCopied] = useState(false);
+  const [promptError, setPromptError] = useState('');
 
-  const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
-  };
-
-  useEffect(() => {
-    setSelectedFoods(currentFoods => {
-      const currentValidFoods = currentFoods.filter(Boolean);
-      const newSelection = new Array(Number(numberOfFoods)).fill('');
-      for (let i = 0; i < Math.min(Number(numberOfFoods), currentValidFoods.length); i++) {
-        newSelection[i] = currentValidFoods[i];
-      }
-      return newSelection;
-    });
-  }, [numberOfFoods]);
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
   const handleFoodSelectionChange = (index, newFood) => {
     const newSelection = [...selectedFoods];
@@ -134,180 +271,60 @@ export default function App() {
     const activeFoods = selectedFoods.filter(food => food && food !== '');
     const foodDescriptions = activeFoods.length > 0 ? activeFoods.map(food => `- ${food}: ${foodData[food]}`).join('\n') : '- [Pilih makanan untuk melihat deskripsi]';
     const foodList = activeFoods.length > 0 ? activeFoods.join(', ') : '[pilih makanan]';
-    const finalBackground = background === 'Custom (free text)' ? (customBackground || '[ketik deskripsi background]') : background;
-    const finalLighting = lighting === 'Custom (free text)' ? (customLighting || '[ketik deskripsi pencahayaan]') : lighting;
     const finalAspectRatio = aspectRatio.split(' ')[0];
-    const userRequestPrompt = `Generate a hyper-realistic food photo featuring ${foodList}, beautifully arranged on a ${finalBackground}.\n\nEach dish must be highly detailed and authentic to its Indonesian origin:\n${foodDescriptions}\n\nUse ${finalLighting} to bring out natural textures, steam, and gloss of the dishes.\nDo not include any text, logos, or watermarks.\n\nStyle: Hyper-realistic food photography\nCamera: DSLR, 35mm lens, f/4.0\nComposition: ${composition}\nAspect ratio: ${finalAspectRatio}\nResolution: 6K\nUsage: Food showcase, culinary blog, or social media visual`;
+    const userRequestPrompt = `Generate a hyper-realistic food photo featuring ${foodList}, beautifully arranged on a ${background}.\n\nEach dish must be highly detailed and authentic to its Indonesian origin:\n${foodDescriptions}\n\nUse ${lighting} to bring out natural textures, steam, and gloss of the dishes.\nDo not include any text, logos, or watermarks.\n\nStyle: Hyper-realistic food photography\nCamera: DSLR, 35mm lens, f/4.0\nComposition: ${composition}\nAspect ratio: ${finalAspectRatio}\nResolution: 6K\nUsage: Food showcase, culinary blog, or social media visual`;
     return `${systemPrompt}\n\n--- USER REQUEST ---\n\n${userRequestPrompt}`;
-  }, [selectedFoods, background, customBackground, lighting, customLighting, aspectRatio, composition, systemPrompt]);
-
+  }, [selectedFoods, background, lighting, aspectRatio, composition, systemPrompt]);
+  
   const handleGenerateClick = () => {
+    if (!numberOfFoods || numberOfFoods === '') {
+        setPromptError('Silakan pilih jumlah makanan terlebih dahulu.');
+        return;
+    }
+    const activeFoods = selectedFoods.filter(food => food && food !== '');
+    if (activeFoods.length !== Number(numberOfFoods)) {
+        setPromptError('Silakan lengkapi semua pilihan makanan.');
+        return;
+    }
+    
+    setPromptError('');
     setDisplayPrompt(potentialPrompt);
   };
-  
-  // --- THEME-AWARE CLASS STRINGS ---
+
+  useEffect(() => {
+    const num = Number(numberOfFoods);
+    if (num > 0) {
+      setSelectedFoods(currentFoods => {
+        const currentValidFoods = currentFoods.filter(Boolean);
+        const newSelection = new Array(num).fill('');
+        for (let i = 0; i < Math.min(num, currentValidFoods.length); i++) {
+          newSelection[i] = currentValidFoods[i];
+        }
+        return newSelection;
+      });
+    } else {
+        setSelectedFoods([]);
+    }
+  }, [numberOfFoods]);
+
   const themeClasses = {
-    mainBg: theme === 'dark' ? 'bg-gray-900 text-gray-200' : 'bg-stone-50 text-gray-800',
-    headerBg: theme === 'dark' ? 'bg-gray-800/80 border-gray-700' : 'bg-white/80 border-stone-200',
-    headerText: theme === 'dark' ? 'text-gray-300' : 'text-gray-600',
-    iconHover: theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-stone-200',
-    dropdownBg: theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-stone-200',
-    dropdownItem: theme === 'dark' ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-stone-100 hover:text-gray-900',
-    dropdownActive: theme === 'dark' ? 'bg-amber-600 text-white' : 'bg-amber-400 text-black',
-    cardBg: theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-stone-200',
-    titleText: theme === 'dark' ? 'text-white' : 'text-gray-900',
-    subtitleText: theme === 'dark' ? 'text-gray-400' : 'text-gray-500',
-    inputBg: theme === 'dark' ? 'bg-gray-700 border-gray-600 placeholder-gray-500' : 'bg-stone-100 border-stone-300 placeholder-gray-400',
-    inputFocus: 'focus:ring-2 focus:ring-amber-500 focus:outline-none',
-    buttonPrimary: theme === 'dark' ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-amber-400 hover:bg-amber-500 text-black',
-    buttonSecondary: theme === 'dark' ? 'bg-gray-600 hover:bg-gray-500 text-gray-200' : 'bg-stone-200 hover:bg-stone-300 text-gray-700'
+    mainBg: theme === 'dark' ? 'bg-slate-900 text-slate-300' : 'bg-sky-50 text-slate-700',
+    headerBg: theme === 'dark' ? 'bg-slate-800/80 border-slate-700' : 'bg-white/80 border-slate-200',
+    headerText: theme === 'dark' ? 'text-slate-300' : 'text-slate-600',
+    iconHover: theme === 'dark' ? 'hover:bg-slate-700' : 'hover:bg-slate-200',
+    dropdownBg: theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200',
+    dropdownItem: theme === 'dark' ? 'text-slate-300 hover:bg-slate-700 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+    dropdownActive: theme === 'dark' ? 'bg-indigo-600 text-white' : 'bg-rose-500 text-white',
+    cardBg: theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200',
+    cardBorder: theme === 'dark' ? 'border-slate-700' : 'border-slate-200',
+    titleText: theme === 'dark' ? 'text-white' : 'text-slate-900',
+    subtitleText: theme === 'dark' ? 'text-slate-400' : 'text-slate-500',
+    labelText: theme === 'dark' ? 'text-slate-300' : 'text-slate-600',
+    inputBg: theme === 'dark' ? 'bg-slate-700/50 border-slate-600 placeholder-slate-400' : 'bg-slate-100 border-slate-300 placeholder-slate-400',
+    inputFocus: 'focus:ring-2 focus:ring-indigo-500',
+    buttonPrimary: theme === 'dark' ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-rose-500 hover:bg-rose-600 text-white',
+    buttonSecondary: theme === 'dark' ? 'bg-slate-600 hover:bg-slate-500 text-slate-200' : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
   };
-
-  const RenderContent = () => {
-    switch (currentPage) {
-      case 'setting':
-        return <SettingPage systemPrompt={systemPrompt} setSystemPrompt={setSystemPrompt} themeClasses={themeClasses} />;
-      case 'generate':
-      default:
-        return <GeneratePage themeClasses={themeClasses} />;
-    }
-  };
-
-  const GeneratePage = ({ themeClasses }) => (
-    <div className="w-full">
-        <h1 className={`text-3xl sm:text-4xl font-bold ${themeClasses.titleText} mb-2`}>AI Food Photo Prompt Generator</h1>
-        <p className={`text-lg mb-8 ${themeClasses.subtitleText}`}>Buat prompt deskriptif untuk fotografi makanan khas indonesia.</p>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            <div className={`p-6 rounded-2xl shadow-lg border flex flex-col ${themeClasses.cardBg}`}>
-                <div className="flex-grow">
-                    <h2 className={`text-xl font-semibold mb-6 border-b pb-3 ${theme === 'dark' ? 'border-gray-600' : 'border-stone-200'}`}>Atur Komposisi</h2>
-                    <div className="space-y-5">
-                        {/* Form controls */}
-                        <div>
-                          <label htmlFor="number-of-foods-select" className={`block text-sm font-medium ${themeClasses.headerText} mb-2`}>Jumlah Makanan</label>
-                          <select id="number-of-foods-select" value={numberOfFoods} onChange={(e) => setNumberOfFoods(Number(e.target.value))} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>
-                            {[1, 2, 3].map(n => <option key={n} value={n}>{n}</option>)}
-                          </select>
-                        </div>
-                        {Array.from({ length: numberOfFoods }).map((_, index) => {
-                          const availableOptions = foodOptions.filter(food => !selectedFoods.includes(food) || selectedFoods[index] === food);
-                          return (
-                            <div key={index}>
-                              <label htmlFor={`food-select-${index}`} className={`block text-sm font-medium ${themeClasses.headerText} mb-2`}>{`Pilihan Makanan ${index + 1}`}</label>
-                              <select id={`food-select-${index}`} value={selectedFoods[index] || ''} onChange={(e) => handleFoodSelectionChange(index, e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>
-                                <option value="">-- Pilih Makanan --</option>
-                                {availableOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                              </select>
-                            </div>
-                          );
-                        })}
-                        <div>
-                          <label htmlFor="composition-select" className={`block text-sm font-medium ${themeClasses.headerText} mb-2`}>Gaya Pengambilan Foto</label>
-                          <select id="composition-select" value={composition} onChange={(e) => setComposition(e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>{compositionOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>
-                        </div>
-                        <div>
-                          <label htmlFor="background-select" className={`block text-sm font-medium ${themeClasses.headerText} mb-2`}>Background</label>
-                          <select id="background-select" value={background} onChange={e => setBackground(e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>{backgroundOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>
-                          {background === 'Custom (free text)' && (<input type="text" value={customBackground} onChange={e => setCustomBackground(e.target.value)} placeholder="Contoh: Marble table with gold veins" className={`w-full mt-2 p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}/>)}
-                        </div>
-                        <div>
-                          <label htmlFor="lighting-select" className={`block text-sm font-medium ${themeClasses.headerText} mb-2`}>Pencahayaan</label>
-                          <select id="lighting-select" value={lighting} onChange={e => setLighting(e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>{lightingOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>
-                          {lighting === 'Custom (free text)' && (<input type="text" value={customLighting} onChange={e => setCustomLighting(e.target.value)} placeholder="Contoh: Blue neon light from the back" className={`w-full mt-2 p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}/>)}
-                        </div>
-                        <div>
-                          <label htmlFor="aspect-ratio-select" className={`block text-sm font-medium ${themeClasses.headerText} mb-2`}>Aspect Ratio</label>
-                          <select id="aspect-ratio-select" value={aspectRatio} onChange={e => setAspectRatio(e.target.value)} className={`w-full p-3 rounded-lg ${themeClasses.inputBg} ${themeClasses.inputFocus}`}>{aspectRatioOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}</select>
-                        </div>
-                    </div>
-                </div>
-                <div className={`mt-8 pt-6 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-stone-200'}`}>
-                    <button onClick={handleGenerateClick} className={`w-full py-4 px-4 rounded-lg font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3 shadow-lg ${themeClasses.buttonPrimary}`}>
-                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                      Generate Prompt
-                    </button>
-                </div>
-            </div>
-            <div className={`p-6 rounded-2xl shadow-lg border flex flex-col ${themeClasses.cardBg}`}>
-                <h2 className="text-xl font-semibold mb-4">Hasil Prompt</h2>
-                <textarea
-                    readOnly
-                    value={displayPrompt}
-                    placeholder="Klik 'Generate Prompt' untuk melihat hasilnya di sini..."
-                    className={`w-full h-full flex-grow p-4 rounded-lg resize-none text-base leading-relaxed ${themeClasses.inputBg} ${themeClasses.inputFocus}`}
-                    rows="20"
-                />
-                {displayPrompt && (
-                    <button onClick={handleCopy} className={`w-full mt-4 py-3 px-4 rounded-lg font-bold text-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg ${themeClasses.buttonPrimary}`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            {isCopied ? <path d="M20 6 9 17l-5-5"/> : <><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></>}
-                        </svg>
-                        {isCopied ? 'Tersalin!' : 'Salin Prompt'}
-                    </button>
-                )}
-            </div>
-        </div>
-    </div>
-  );
-  
-  const SettingPage = ({ systemPrompt, setSystemPrompt, themeClasses }) => {
-    const [tempPrompt, setTempPrompt] = useState(systemPrompt);
-    const [saveStatus, setSaveStatus] = useState('');
-
-    const handleSave = () => {
-        setSystemPrompt(tempPrompt);
-        setSaveStatus('Tersimpan!');
-        setTimeout(() => setSaveStatus(''), 2000);
-    };
-
-    const handleReset = () => {
-        setTempPrompt(DEFAULT_SYSTEM_PROMPT);
-    }
-
-    return (
-      <div className="w-full">
-        <h1 className={`text-3xl sm:text-4xl font-bold ${themeClasses.titleText} mb-8`}>Pengaturan</h1>
-        <div className={`max-w-3xl p-8 rounded-2xl shadow-lg border ${themeClasses.cardBg}`}>
-            <div className="space-y-8">
-                <div>
-                    <label htmlFor="system-prompt-input" className={`block text-lg font-medium ${themeClasses.headerText} mb-2`}>System Prompt</label>
-                     <textarea
-                        id="system-prompt-input"
-                        value={tempPrompt}
-                        onChange={(e) => setTempPrompt(e.target.value)}
-                        rows="8"
-                        className={`w-full p-3 rounded-lg text-sm leading-relaxed ${themeClasses.inputBg} ${themeClasses.inputFocus}`}
-                    />
-                    <div className="mt-4 flex justify-between items-center">
-                        <button onClick={handleReset} className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${themeClasses.buttonSecondary}`}>
-                            Reset ke Default
-                        </button>
-                        <div className="flex items-center gap-4">
-                           {saveStatus && <span className="text-amber-500 text-sm italic">{saveStatus}</span>}
-                           <button onClick={handleSave} className={`px-6 py-2 text-sm font-bold rounded-lg transition-colors shadow-lg ${themeClasses.buttonPrimary}`}>
-                                Save Changes
-                           </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-      </div>
-    );
-  };
-
-  const NavButton = ({ page, label, icon, themeClasses }) => (
-    <button
-      onClick={() => {
-          setCurrentPage(page);
-          setIsNavVisible(false); // Close nav on selection
-      }}
-      className={`flex items-center w-full text-left p-3 rounded-lg font-semibold transition-colors ${currentPage === page ? themeClasses.dropdownActive : themeClasses.dropdownItem}`}
-    >
-      {icon}
-      <span className="ml-3">{label}</span>
-    </button>
-  );
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-300 ${themeClasses.mainBg}`}>
@@ -322,21 +339,50 @@ export default function App() {
             <button onClick={toggleTheme} className={`p-2 rounded-full ${themeClasses.iconHover}`}>
                 {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </button>
-            <button onClick={() => setIsNavVisible(!isNavVisible)} className={`p-2 rounded-full ${themeClasses.iconHover}`}>
-                <UserIcon />
-            </button>
+            <div className="relative">
+              <button onClick={() => setIsNavVisible(!isNavVisible)} className={`p-2 rounded-full ${themeClasses.iconHover}`}>
+                  <UserIcon />
+              </button>
+              <div className={`absolute top-full right-0 mt-2 w-64 border rounded-xl shadow-lg p-4 transition-all duration-300 ${themeClasses.dropdownBg} ${isNavVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
+                <nav className="flex flex-col gap-2">
+                    <NavButton page="generate" label="Generator" icon={<GeneratorIcon />} themeClasses={themeClasses} currentPage={currentPage} setCurrentPage={setCurrentPage} setIsNavVisible={setIsNavVisible}/>
+                    <NavButton page="setting" label="Settings" icon={<SettingsIcon />} themeClasses={themeClasses} currentPage={currentPage} setCurrentPage={setCurrentPage} setIsNavVisible={setIsNavVisible}/>
+                </nav>
+              </div>
+            </div>
           </div>
       </header>
       
-      <div className={`absolute top-16 right-4 z-10 w-64 border rounded-xl shadow-lg p-4 transition-all duration-300 ${themeClasses.dropdownBg} ${isNavVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
-        <nav className="flex flex-col gap-2">
-            <NavButton page="generate" label="Generator" icon={<GeneratorIcon />} themeClasses={themeClasses} />
-            <NavButton page="setting" label="Settings" icon={<SettingsIcon />} themeClasses={themeClasses} />
-        </nav>
-      </div>
-      
       <main className="p-4 sm:p-8">
-          <RenderContent />
+        {currentPage === 'generate' && 
+          <GeneratePage 
+            themeClasses={themeClasses} 
+            numberOfFoods={numberOfFoods}
+            setNumberOfFoods={setNumberOfFoods}
+            selectedFoods={selectedFoods}
+            handleFoodSelectionChange={handleFoodSelectionChange}
+            composition={composition}
+            setComposition={setComposition}
+            background={background}
+            setBackground={setBackground}
+            lighting={lighting}
+            setLighting={setLighting}
+            aspectRatio={aspectRatio}
+            setAspectRatio={setAspectRatio}
+            handleGenerateClick={handleGenerateClick}
+            displayPrompt={displayPrompt}
+            handleCopy={handleCopy}
+            isCopied={isCopied}
+            promptError={promptError}
+          />
+        }
+        {currentPage === 'setting' && 
+          <SettingPage 
+            systemPrompt={systemPrompt} 
+            setSystemPrompt={setSystemPrompt} 
+            themeClasses={themeClasses} 
+          />
+        }
       </main>
     </div>
   );
