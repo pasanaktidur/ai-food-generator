@@ -64,7 +64,7 @@ const SettingsModal = ({ isOpen, onClose, systemPrompt, setSystemPrompt, themeCl
         setTimeout(() => {
             setSaveStatus('');
             onClose();
-        }, 1500);
+        }, 300); // Shortened duration
     };
 
     const handleReset = () => {
@@ -219,7 +219,7 @@ export default function App() {
           <div className={`font-bold text-xl ${themeClasses.titleText}`}>
               Pasanaktidur
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-4">
             <a href="http://lynk.id/pasanaktidur/s/re2yoep3v6r0" target="_blank" rel="noopener noreferrer" className={`p-2 rounded-full ${themeClasses.iconHover}`}>
                 <CoffeeIcon />
             </a>
@@ -241,7 +241,7 @@ export default function App() {
       />
       
       <main className="p-4 sm:p-8">
-          <div className="w-full">
+        <div className="w-full">
             <h1 className={`text-3xl sm:text-4xl font-bold ${themeClasses.titleText} mb-2`}>AI Food Photo Prompt Generator</h1>
             <p className={`text-lg mb-8 ${themeClasses.subtitleText}`}>Buat prompt deskriptif untuk fotografi makanan khas indonesia.</p>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
